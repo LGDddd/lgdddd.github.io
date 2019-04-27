@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>办电e助手数据统计</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    ul,
+    li {
+      list-style: none;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      height: 100%;
+    }
+
+    .wrap {
+      min-height: 100%;
+      background-color: #F5f5f5;
+      position: relative;
+    }
+
+    .wrap>img {
+      width: 100%;
+    }
+
+    .select_box {
+      position: absolute;
+      left: 40px;
+      top: 120px;
+      min-width: 120px;
+      height: 18px;
+    }
+
+    .show_time {
+      height: 100%;
+      box-sizing: border-box;
+      position: absolute;
+      border: 1px solid white;
+      color: #fff;
+      line-height: 16px;
+      padding: 0px 6px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .select_time {
+
+      position: absolute;
+      left: 0;
+      top: 18px;
+      background-color: #fff;
+    }
+
+    .select_time li {
+      height: 24px;
+      line-height: 24px;
+      font-size: 12px;
+      color: #666;
+      padding: 0px 6px;
+      border: 1px solid white;
+      white-space: nowrap;
+    }
+
+    .popup {
+      position: fixed;
+      width: 200px;
+      height: 30px;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      z-index: 99;
+      font-size: 12px;
+      color: #fff;
+      border-radius: 4px;
+      text-align: center;
+      line-height: 30px;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: none;
+    }
+
+    .pupup_select_wrap {
+      width: 100%;
+      height: 100%;
+      z-index: 100;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: none;
+    }
+
+    .popup_time {
+      width: 290px;
+      height: 240px;
+      position: absolute;
+      left: 0;
+      right: 0;
+      margin: auto;
+      top: 160px;
+      background: #fff;
+      border-radius: 6px;
+    }
+
+    .time_select_header {
+      width: 100%;
+      height: 40px;
+      display: flex;
+      display: -webkit-flex;
+      justify-content: space-around;
+      align-items: flex-end;
+    }
+
+    .time_select_header>.left,
+    .right {
+      width: 20px;
+      display: block;
+    }
+
+    .time_select_header span {
+      font-size: 14px;
+    }
+
+    .time_select_content {
+      height: 160px;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 20px 10px;
+      display: flex;
+      display: -webkit-flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .time_select_content li {
+      width: 80%;
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      /* border-bottom: 1px solid #eee; */
+      min-height: 24px;
+      display: flex;
+      display: -webkit-flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .time_select_content li.active {
+      background-color: rgba(222, 253, 243, 0.7);
+      color: #333;
+    }
+
+    .time_select_footer {
+      width: 100%;
+      height: 30px;
+      text-align: center;
+      line-height: 40px;
+      font-size: 14px;
+    }
+
+    .select_time_box {
+      z-index: 99;
+      width: 160px;
+      height: 20px;
+      position: absolute;
+      left: 46px;
+      top: 130px;
+      color: #fff;
+      font-size: 12px;
+      line-height: 20px;
+      background-image: url('./img/tubiaozhizuo.png');
+      background-size: 12px;
+      background-position: 140px 4px;
+      background-repeat: no-repeat;
+      border: 1px solid #fff;
+      text-indent: 10px;
+    }
+  </style>
+  <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.slim.min.js"></script>
+</head>
+
+<body>
+  <div class="wrap">
+    <img class="data_img" src="#" alt="">
+    <div class="select_time_box"></div>
+  </div>
+  <div class="popup">
+    暂无数据~
+  </div>
+  <!-- 时间选择器 -->
+  <div class="pupup_select_wrap">
+    <div class="popup_time">
+      <div class="time_select_header">
+        <img class="left" src='./img/arrow_left.png'><span>4月</span><img class="right" src='./img/arrow_right.png'>
+      </div>
+      <ul class="time_select_content">
+
+      </ul>
+      <div class="time_select_footer">
+        查看本月月报
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 适配页面
+    (function () {
+      let header = document.getElementsByTagName('head')[0];
+      let viewportConf = document.createElement('meta');
+      viewportConf.name = 'viewport';
+      if (/Android (\d+\.\d+)/.test(navigator.userAgent)) {
+        let version = parseFloat(RegExp.$1);
+        if (version > 2.3) {
+          let phoneScale = parseInt(window.screen.width) / 320;
+          if (/MZ-M571C/.test(navigator.userAgent)) {
+            viewportConf.content = "width=320, minimum-scale = 1, maximum-scale= 1, user-scalable=no";
+            header.appendChild(viewportConf);
+          } else if (/M571C/.test(navigator.userAgent) && /LizhiFM/.test(navigator.userAgent)) {
+            viewportConf.content = "width=320, minimum-scale = 1, maximum-scale= 1, user-scalable=no";
+            header.appendChild(viewportConf);
+          } else {
+            viewportConf.content = "width=320, minimum-scale = " + phoneScale + ", maximum-scale = " + phoneScale + ", target-densitydpi=device-dpi, user-scalable=no";
+            header.appendChild(viewportConf);
+          }
+        } else {
+          viewportConf.content = "width=320, target-densitydpi=device-dpi, user-scalable=no";
+          header.appendChild(viewportConf);
+        }
+      } else {
+        viewportConf.content = "width=320, target-densitydpi=device-dpi, user-scalable=no";
+        header.appendChild(viewportConf);
+      }
+    })();
+    // 时间选择弹窗
+    // 数据列表
+    var TIMELIST = [
+      {
+        month: '四月',
+        monthEn: 4,
+        weekList: [
+          '第一周（截止至4.04日）',
+          '第二周（截止至4.11日）',
+          '第三周（截止至4.18日）',
+          '第四周（截止至4.25日）',
+        ]
+      },
+      {
+        month: '五月',
+        monthEn: 5,
+        weekList: [
+          '第五周（截止至5.02日）',
+          '第六周（截止至5.09日）',
+          '第七周（截止至5.16日）',
+          '第八周（截止至5.23日）',
+          '第九周（截止至5.30日）',
+        ]
+      },
+      {
+        month: '六月',
+        monthEn: 6,
+        weekList: [
+          '第十周（截止至6.06日）',
+          '第十一周（截止至6.13日）',
+          '第十二周（截止至6.20日）',
+          '第十三周（截止至6.27日）',
+        ]
+      },
+      {
+        month: '七月',
+        monthEn: 7,
+        weekList: [
+          '第十四周（截止至7.04日）',
+          '第十五周（截止至7.11日）',
+          '第十六周（截止至7.18日）',
+          '第十六周（截止至7.25日）',
+        ]
+      },
+      {
+        month: '八月',
+        monthEn: 8,
+        weekList: [
+          '第十七周（截止至8.01日）',
+          '第十八周（截止至8.08日）',
+          '第二十周（截止至8.15日）',
+          '第二十一周（截止至8.22日）',
+          '第二十二周（截止至8.29日）',
+        ]
+      }
+    ];
+    // 初始化数据
+    var baseDate = new Date();
+    var INDEX = 0;
+    function inital() {
+      var month = baseDate.getMonth() + 1;
+      var week = (function () { // 获取当前星期的周四日期
+        var day = new Date().getDay(); //0=周日,
+        var minus = 4 - day;
+        var thisWeek = new Date();
+        thisWeek.setDate(thisWeek.getDate() + minus);
+        var month = thisWeek.getMonth() + 1;
+        var strDate = thisWeek.getDate() <= 9 ? '0' + thisWeek.getDate() : thisWeek.getDate();
+        var time = month + '.' + strDate;
+        return time;
+      })();
+      var renderData = [];
+      $.each(TIMELIST, function (index, item) {
+        if (month === item.monthEn) {
+          renderData = item;
+        }
+      })
+      renderHtml(renderData, week);
+    }
+    inital();
+    // 渲染html
+    function renderHtml(renderData, week) {
+      $('.time_select_header>span').html(renderData.month);
+      var child = "";
+      $.each(renderData.weekList, function (index, item) {
+        if (week && item.indexOf(week) !== -1) {
+          child += "<li class='active'>" + item + "</li>";
+        }else{
+          child += "<li>" + item + "</li>";
+        }
+      })
+      $('.time_select_content').html(child);
+      if(week) {
+        $('.select_time_box').html(getSelectValue())
+        getImg(getSelectValue());
+      }
+    }
+    // 取出当前所选的时间匹配当前数据
+    function getSelectValue() {
+      return $('.time_select_content>.active').text().trim();
+    }
+
+    // 打开时间选择弹窗
+    $('.select_time_box').on('click', function () {
+      $('.pupup_select_wrap').show();
+    })
+    // 点击阴影关闭事件选择弹窗
+    $('.pupup_select_wrap').on('click', function (ev) {
+      if (ev.currentTarget === ev.target) {
+        $(this).hide();
+      }
+    });
+
+    // 选择时间
+    $('.time_select_content').on('click', function (ev) {
+      if ($(ev.target).get(0).tagName === "LI") {
+        $(ev.target).siblings().removeClass('active');
+        $(ev.target).addClass('active');
+        $('.select_time_box').html(getSelectValue())
+        getImg(getSelectValue());
+        $('.pupup_select_wrap').hide();
+      }
+    })
+    // 点击左键选择月份
+    $('.time_select_header > .left').on('click', function () {
+      if (INDEX === 0) {
+        return;
+      }
+      INDEX--;
+      var data = TIMELIST[INDEX];
+      renderHtml(data);
+    });
+    // 点击右键选择月份
+    $('.time_select_header > .right').on('click', function () {
+      if (INDEX === TIMELIST.length - 1) {
+        return;
+      }
+      INDEX++;
+      var data = TIMELIST[INDEX];
+      renderHtml(data);
+    });
+    $('.time_select_footer').on('click', function() {
+      var month = $('.time_select_header>span').text().trim();
+      getImg(month);
+      $('.pupup_select_wrap').hide();
+    });
+    function getImg(value) {
+      var imgsrc = "";
+      switch (value) {
+        case '第一周（截止至4.04日）':
+          imgsrc = "./img/4.01_4.04.png";
+          break;
+        case '第二周（截止至4.11日）':
+          imgsrc = "./img/4.04_4.11.png";
+          break;
+        case '第三周（截止至4.18日）':
+          imgsrc = "./img/4.12_4.18.png";
+          break;
+        case '第四周（截止至4.25日）':
+          imgsrc = "./img/4.19_4.25.png";
+          break;
+        default:
+          imgsrc = "";
+          break;
+      }
+      if(imgsrc) {
+        showImg(imgsrc);
+      }else{
+        showImg();
+      }
+    }
+    function showImg(imgsrc) {
+      if(imgsrc) {
+        $('.data_img').attr('src', imgsrc)
+      }else{
+        $('.popup').show();
+        setTimeout(function() {
+          $('.popup').hide();
+        }, 1500);
+      }
+    }
+  </script>
+</body>
+
+</html>
